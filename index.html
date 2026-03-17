@@ -1501,25 +1501,18 @@ function ResourceCenter() {
 
   // Load from shared storage on mount
   useEffect(() => {
-    async function loadResources() {
-      try {
-        const saved = localStorage.getItem("resources_v1");
-        if (saved) {
-          setResourcesState(JSON.parse(saved));
-        }
-      } catch(e) {
-        // No saved resources yet — use defaults
-      }
-      setLoaded(true);
-    }
-    loadResources();
+    try {
+      const saved = localStorage.getItem("resources_v1");
+      if (saved) setResourcesState(JSON.parse(saved));
+    } catch(e) {}
+    setLoaded(true);
   }, []);
 
   // Save to shared storage whenever resources change (after initial load)
   const [toast, setToast] = useState("");
   function showToast(msg) { setToast(msg); setTimeout(()=>setToast(""), 2200); }
 
-  async function persistAndSet(newResources) {
+  function persistAndSet(newResources) {
     setResourcesState(newResources);
     try {
       localStorage.setItem("resources_v1", JSON.stringify(newResources));
