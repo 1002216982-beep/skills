@@ -2,10 +2,11 @@
 <html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <title>מערכת מיומנויות דמות הבוגר 2030</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/regenerator-runtime/0.14.1/runtime.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -996,7 +997,7 @@ VALID:[yes/no]
             </div>
             <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
               {SKILLS.map(s=>(
-                <button key={s} onClick={()=>tog(s)} style={{padding:"4px 10px",borderRadius:99,cursor:"pointer",fontSize:11,
+                <button key={s} onClick={()=>tog(s)} className="chip-btn" style={{padding:"4px 10px",borderRadius:99,cursor:"pointer",fontSize:11,
                   fontWeight:selS.includes(s)?700:400,
                   border:selS.includes(s)?"1.5px solid #0369a1":"1.5px solid #bae6fd",
                   background:selS.includes(s)?"rgba(3,105,161,0.12)":"transparent",
@@ -1019,7 +1020,7 @@ VALID:[yes/no]
                   <div style={{fontSize:10,fontWeight:700,color:"#94a3b8",marginBottom:5,letterSpacing:"0.04em"}}>{grp.label}</div>
                   <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
                     {grp.arenas.map(a=>(
-                      <button key={a} onClick={()=>togArena(a)} style={{padding:"4px 10px",borderRadius:99,cursor:"pointer",fontSize:11,
+                      <button key={a} onClick={()=>togArena(a)} className="chip-btn" style={{padding:"4px 10px",borderRadius:99,cursor:"pointer",fontSize:11,
                         fontWeight:selArenas.includes(a)?700:400,
                         border:selArenas.includes(a)?"1.5px solid #0369a1":"1.5px solid #bae6fd",
                         background:selArenas.includes(a)?"rgba(3,105,161,0.12)":"transparent",
@@ -1089,7 +1090,7 @@ VALID:[yes/no]
             </div>
             {events.length===0
               ?<div style={{textAlign:"center",padding:"32px 0",color:"#334155",fontSize:12}}>אין אירועים עדיין</div>
-              :<div style={{overflowX:"auto"}}>
+              :<div className="mobile-table-wrap" style={{overflowX:"auto"}}>
                 <table style={{width:"100%",borderCollapse:"collapse",fontSize:11,direction:"rtl"}}>
                   <thead><tr>{["זירה","תיאור","מיומנויות","רמה","תאריך",""].map((h,i)=><th key={i} style={{padding:"7px 9px",borderBottom:"1px solid #bae6fd",color:"#0369a1",fontWeight:700,fontSize:9,textAlign:"right",whiteSpace:"nowrap"}}>{h}</th>)}</tr></thead>
                   <tbody>{events.map(ev=>{const lv=LVL[ev.level];return(
@@ -1172,7 +1173,7 @@ VALID:[yes/no]
                     const barLabel=score=>score===3?"מיטבית":score===2?"קיימת":score===1?"נמוכה":"אין נתון";
                     const yLabels=[{v:1,t:"נמוכה"},{v:2,t:"קיימת"},{v:3,t:"מיטבית"}];
                     return (
-                      <div style={{overflowX:"auto",direction:"ltr"}}>
+                      <div className="chart-scroll" style={{overflowX:"auto",direction:"ltr"}}>
                         <svg width={totalW} height={H+PAD_B+PAD_T} style={{display:"block"}}>
                           {/* Y gridlines + labels */}
                           {yLabels.map(({v,t})=>{
@@ -1383,7 +1384,7 @@ function AdminLoginModal({ onLogin, onClose }) {
       display:"flex", alignItems:"center", justifyContent:"center",
       zIndex:9999, direction:"rtl",
     }}>
-      <div style={{background:"white",borderRadius:16,padding:28,width:320,boxShadow:"0 20px 60px rgba(0,0,0,0.25)",textAlign:"center"}}>
+      <div className="modal-content" style={{background:"white",borderRadius:16,padding:28,width:320,maxWidth:"92vw",boxShadow:"0 20px 60px rgba(0,0,0,0.25)",textAlign:"center"}}>
         <div style={{fontSize:36,marginBottom:10}}>🔐</div>
         <div style={{fontSize:15,fontWeight:900,color:"#0c4a6e",marginBottom:6}}>כניסת אדמין</div>
         <div style={{fontSize:12,color:"#64748b",marginBottom:18}}>הכנס/י סיסמת אדמין לניהול משאבים</div>
@@ -1478,7 +1479,7 @@ function DeleteConfirmModal({ onConfirm, onClose }) {
       display:"flex", alignItems:"center", justifyContent:"center",
       zIndex:9999, direction:"rtl",
     }}>
-      <div style={{background:"white",borderRadius:14,padding:24,width:320,textAlign:"center",boxShadow:"0 16px 48px rgba(0,0,0,0.2)"}}>
+      <div className="modal-content" style={{background:"white",borderRadius:14,padding:24,width:320,maxWidth:"92vw",textAlign:"center",boxShadow:"0 16px 48px rgba(0,0,0,0.2)"}}>
         <div style={{fontSize:32,marginBottom:10}}>🗑</div>
         <div style={{fontSize:14,fontWeight:800,color:"#0c4a6e",marginBottom:8}}>מחיקת משאב</div>
         <div style={{fontSize:12,color:"#64748b",marginBottom:20}}>האם למחוק את המשאב? פעולה זו אינה ניתנת לביטול.</div>
@@ -1611,7 +1612,7 @@ function ResourceCenter() {
             <div style={{fontSize:12}}>{search?"נסה/י מילת חיפוש אחרת":"לחץ/י על 'הוסף משאב' כדי להתחיל"}</div>
           </div>
         ) : (
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:14}}>
+          <div className="resource-grid" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:14}}>
             {filtered.map(r => {
               const tp = RESOURCE_TYPES[r.type] || RESOURCE_TYPES.link;
               return (
@@ -1699,7 +1700,7 @@ function WelcomeScreen({onNavigate}) {
       position:"absolute",inset:0,
       background:"linear-gradient(160deg,#0c4a6e 0%,#0369a1 40%,#0e7490 70%,#134e4a 100%)",
       display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
-      direction:"rtl",fontFamily:"system-ui,sans-serif",overflow:"hidden",zIndex:10,
+      direction:"rtl",fontFamily:"system-ui,sans-serif",overflow:"auto",zIndex:10,
     }}>
       <style>{`
         @keyframes floatUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
@@ -1838,22 +1839,54 @@ function App() {
 ::-webkit-scrollbar-thumb{background:#bae6fd;border-radius:99px}
 button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 
-/* ── Mobile ── */
+/* ── Mobile comprehensive ── */
 @media(max-width:768px){
+  /* Layout */
   .app-sidebar{display:none!important}
   .app-bottom-nav{display:flex!important}
-  .app-main{padding-bottom:60px!important}
-  .dash-grid{grid-template-columns:1fr!important;padding:12px!important}
+  .app-main{padding-bottom:60px!important;overflow-y:auto!important}
+
+  /* Dashboard */
+  .dash-grid{grid-template-columns:1fr!important;padding:10px!important;gap:10px!important}
   .charts-2col{grid-template-columns:1fr!important}
-  .welcome-cards{flex-direction:column!important;align-items:center!important}
-  .welcome-card{width:88vw!important;max-width:360px!important}
-  .welcome-title{font-size:22px!important}
-  .dash-header{flex-wrap:wrap;gap:8px;padding:10px 14px!important}
-  .dash-stats{gap:5px!important}
-  .dash-stat{padding:5px 8px!important}
+  .dash-header{flex-wrap:wrap;gap:6px;padding:10px 12px!important}
+  .dash-stats{gap:4px!important;flex-wrap:wrap!important}
+  .dash-stat{padding:5px 8px!important;min-width:60px}
   .dash-stat-val{font-size:13px!important}
-  .tab-btn{font-size:10px!important}
+  .tab-btn{font-size:10px!important;padding:6px 2px!important}
+
+  /* Welcome */
+  .welcome-cards{flex-direction:column!important;align-items:center!important;padding:0 12px!important}
+  .welcome-card{width:92vw!important;max-width:380px!important}
+  .welcome-title{font-size:20px!important}
+
+  /* Chat */
   .chatbot-header{padding:10px 12px!important}
+
+  /* Cards & content */
+  .modal-content{width:94vw!important;max-width:94vw!important;padding:16px!important}
+  
+  /* Tables: horizontal scroll */
+  .mobile-table-wrap{overflow-x:auto!important;-webkit-overflow-scrolling:touch}
+  
+  /* Resource grid: 1 column */
+  .resource-grid{grid-template-columns:1fr!important}
+
+  /* Fix iOS input zoom (font-size must be >= 16px) */
+  input, textarea, select{font-size:16px!important}
+
+  /* SVG chart: allow horizontal scroll */
+  .chart-scroll{overflow-x:auto!important;-webkit-overflow-scrolling:touch!important}
+  
+  /* Chips: larger touch targets */
+  .chip-btn{padding:6px 12px!important;font-size:12px!important}
+  
+  /* Welcome screen padding */
+  .welcome-wrap{padding:20px 0 0!important}
+  
+  /* Prevent content overflow */
+  *{max-width:100%}
+  img{max-width:100%}
 }
 @media(min-width:769px){
   .app-sidebar{display:flex!important}
@@ -1865,7 +1898,9 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
   display:none;
   position:fixed;bottom:0;left:0;right:0;
   background:#0c4a6e;border-top:1px solid rgba(255,255,255,0.15);
-  z-index:200;height:60px;
+  z-index:200;
+  height:calc(60px + env(safe-area-inset-bottom));
+  padding-bottom:env(safe-area-inset-bottom);
   align-items:center;justify-content:space-around;
   direction:rtl;
 }
