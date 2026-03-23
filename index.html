@@ -1,25 +1,26 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>מיומנובוט — דמות הבוגר 2030</title>
-  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>מערכת מיומנויות דמות הבוגר 2030</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/regenerator-runtime/0.14.1/runtime.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
   <style>
-    html, body { margin: 0; padding: 0; height: 100%; direction: rtl; }
-    #root { height: 100%; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body, #root { height: 100%; width: 100%; overflow: hidden; }
+    body { font-family: system-ui, -apple-system, sans-serif; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-thumb { background: #bae6fd; border-radius: 99px; }
   </style>
 </head>
-<body dir="rtl">
+<body>
   <div id="root"></div>
-
   <script type="text/babel">
     const { useState, useEffect, useRef, useMemo } = React;
 
-    // ==================== JSX SOURCE START ====================
 
 const KB = [
   {arena:"פדגוגיה",skill:"",low:"אף אחד מהמורים לא מגדיר את המיומנויות כחלק ממטרות ההוראה וההערכה.",mid:"רק חלק מהמורים מגדירים את המיומנויות כחלק ממטרות ההוראה וההוראה",high:"רוב המורים מגדירים הקניית המיומנויות הוגדרו כחלק ממטרות ההוראה וההערכה."},
@@ -908,7 +909,7 @@ function Chatbot() {
       setTimeout(()=>{bot(`מעולה! בחרת בזירה: ${val} 🏫\n\nתאר/י בקצרה מה קורה כיום בזירה הזו בבית הספר שלך:`,null);setFlow("describe");},350);
     }
     else if(flow==="assess_advance"){
-      if(val==="כן, בואו נקדם!"){
+      if(val==="כן, הצג תרחישים"||val==="כן, בואו נקדם!"){
         const picks=getHighScenarios(lastArena,[]);
         setShownScenarios(picks.map(k=>k.skill));
         const hasStatements = ARENA_STATEMENTS[lastArena] && (
@@ -926,9 +927,21 @@ function Chatbot() {
             : ["חקור זירה אחרת","שיחה חופשית"]);
         }
         setFlow("post");
-      } else {
-        setTimeout(()=>{bot("בסדר גמור 😊\n\nמה תרצה לעשות עכשיו?",["חקור זירות בית-ספריות אחרות","המשך לשיחה חופשית"]);setFlow("after_no");},350);
       }
+      else if(val==="נקודת מבט תלמיד 📚"||val==="נקודת מבט מורה 👩‍🏫"){
+        const level = val==="נקודת מבט תלמיד 📚" ? "student" : "staff";
+        const result = serveFromKB(lastArena, level);
+        const otherChip = level==="student" ? "נקודת מבט מורה 👩‍🏫" : "נקודת מבט תלמיד 📚";
+        if(result){
+          bot(result, [otherChip,"תרחישים נוספים","חקור זירה אחרת","שיחה חופשית"]);
+          setFlow("post_kb");
+        } else {
+          bot(`אין לי היגדים ספציפיים בזירת ${lastArena}.`,["חקור זירה אחרת","שיחה חופשית"]);
+          setFlow("free");
+        }
+      }
+      else if(val==="חקור זירה אחרת"){setTimeout(()=>{bot("בחר/י זירה:",aC(page));setFlow("arena");},300);}
+      else{setTimeout(()=>{bot("בשמחה! 💬\n\nשאל/י אותי כל שאלה בנושא הטמעת מיומנויות בבית הספר.");setFlow("free");},350);}
     }
     else if(flow==="after_no"){
       if(val==="חקור זירות בית-ספריות אחרות"){
@@ -1070,16 +1083,65 @@ function Chatbot() {
     const t=input.trim();if(!t||typing)return;setInput("");usr(t);
     if(flow==="describe"){
       setTyping(true);
-      const kbContext=KB.filter(k=>k.arena===lastArena).map(k=>`🔴${k.low}\n🟡${k.mid}\n🟢${k.high}`).join("\n---\n");
-      const prompt=`תפקיד: ${prof.role} | מגזר: ${prof.sector}\nזירה: ${lastArena}\nתיאור הפעילות הקיימת: "${t}"\n\nהקשר מחוון הזירה:\n${kbContext}\n\nכתוב הערכה כללית קצרה (3-4 משפטים בלבד) של רמת ביטוי המיומנויות בזירה זו. אל תפרט לפי מיומנויות בודדות — תן תמונה כוללת ומשוב כן ומעודד. סיים בשורה אחת שמציינת את הרמה הכללית (🔴 / 🟡 / 🟢).`;
+
+      // Build full KB context for this arena — all levels, all skills
+      const kbRows = KB.filter(k=>k.arena===lastArena);
+      const kbContext = kbRows.map(k=>
+        `מיומנות: ${k.skill||"כללי"}\n🔴 נמוכה: ${k.low}\n🟡 קיימת: ${k.mid}\n🟢 מיטבית: ${k.high}`
+      ).join("\n---\n");
+
+      // Also get ARENA_STATEMENTS for this arena
+      const stmtData = ARENA_STATEMENTS[lastArena];
+      const studentStmts = stmtData?.student?.join("\n• ") || "";
+      const staffStmts   = stmtData?.staff?.join("\n• ")   || "";
+
+      const prompt = `
+תפקיד: ${prof.role} | מגזר: ${prof.sector} | זירה: ${lastArena}
+
+תיאור הפעילות הנוכחית בזירה:
+"${t}"
+
+=== מחוון הזירה (לפי מיומנויות) ===
+${kbContext}
+
+=== היגדים מיטביים (מקובץ הזירות) ===
+רמת תלמיד:
+• ${studentStmts}
+רמת צוות/מורה:
+• ${staffStmts}
+
+=== הנחיות לניתוח ===
+בצע ניתוח מובנה לפי הפורמט הבא בדיוק:
+
+LEVEL:[low/mid/high]
+
+📍 **רמה נוכחית: [🔴 נמוכה / 🟡 קיימת אך לא מספיקה / 🟢 מיטבית]**
+
+🔍 **מה מעיד על כך?**
+[2-3 משפטים שמסבירים מה בתיאור של המשתמש מצביע על רמה זו — התאמה לדוגמאות במחוון]
+
+⚡ **מה חסר כדי להגיע לרמה הבאה?**
+[2-3 פערים קונקרטיים שזוהו בהשוואה לרמה המיטבית במחוון]
+
+✅ **חוזקות שכבר קיימות:**
+[1-2 דברים חיוביים שעולים מהתיאור]
+
+🎯 **המלצות מיידיות:**
+[2-3 צעדים פרקטיים ומדויקים שניתן ליישם כבר עכשיו, המבוססים על הדוגמאות המיטביות במחוון]
+`;
+
       try{
-        const r=await callAI("יועץ חינוכי מומחה. ענה בעברית.",prompt);
+        const r = await callAI(`יועץ חינוכי מומחה. ענה בעברית בלבד. החזר את הניתוח בפורמט המבוקש.`, prompt);
         setHist(h=>[...h,{role:"user",content:t},{role:"assistant",content:r}]);
-        setTyping(false);bot(r);
-        setTimeout(()=>{bot("האם תרצה לקדם את הזירה לרמה מיטבית? 🚀",["כן, בואו נקדם!","לא, תודה"]);setFlow("assess_advance");},700);
+        setTyping(false);
+        bot(r);
+        setTimeout(()=>{
+          bot("האם תרצה לראות תרחישים מיטביים לזירה זו? 🚀",["כן, הצג תרחישים","נקודת מבט תלמיד 📚","נקודת מבט מורה 👩‍🏫","חקור זירה אחרת"]);
+          setFlow("assess_advance");
+        },700);
       }catch{
         setTyping(false);
-        setTimeout(()=>{bot("האם תרצה לקדם את הזירה לרמה מיטבית? 🚀",["כן, בואו נקדם!","לא, תודה"]);setFlow("assess_advance");},400);
+        setTimeout(()=>{bot("האם תרצה לראות תרחישים מיטביים לזירה זו? 🚀",["כן, הצג תרחישים","חקור זירה אחרת"]);setFlow("assess_advance");},400);
       }
     }
     else if(flow==="free"||flow==="post"||flow==="post_kb"){
@@ -2286,10 +2348,10 @@ button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
     </div>
   );
 }
-    // ==================== JSX SOURCE END ====================
 
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(React.createElement(App));
+
   </script>
 </body>
 </html>
