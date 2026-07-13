@@ -191,7 +191,8 @@ textarea.open-answer:focus{outline:none;border-color:var(--sec,var(--teal));box-
   <div class="container">
     <div class="finish-emoji">🎉</div>
     <h2>סיימת!</h2>
-    <p>כל התשובות נשמרו. תודה על ההשקעה בתהליך הרפלקטיבי.</p>
+    <p>תודה על ההשקעה בתהליך הרפלקטיבי.</p>
+    <div class="status-msg" id="finishStatus"></div>
     <button class="btn gold" id="toDashBtn">למעבר לדשבורד ←</button>
   </div>
 </div>
@@ -555,6 +556,7 @@ function renderSection(){
       document.getElementById("overallRing").style.display = "none";
       show("finish");
       launchConfetti();
+      sendToSheet(true); // שליחה אוטומטית של התשובות בסיום המילוי
     }else{
       state.pos++; save(); renderSection();
     }
@@ -750,15 +752,21 @@ function downloadCSV(){
 }
 
 /* ---------- שליחה ל‑Google Sheet ---------- */
-async function sendToSheet(){
-  const msg = document.getElementById("statusMsg");
+function setSendStatus(cls, txt){
+  ["statusMsg","finishStatus"].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el){ el.className = "status-msg "+cls; el.textContent = txt; }
+  });
+}
+async function sendToSheet(auto){
+  if(auto && state.sent) return; // כבר נשלח אוטומטית
   if(!SHEET_ENDPOINT_URL){
-    msg.className="status-msg err";
-    msg.textContent = "לא הוגדרה כתובת Google Sheet (ראו README). מתבצעת הורדת CSV מקומית במקום.";
+    if(auto){ setSendStatus("", "התשובות שמורות במכשיר זה. ניתן להוריד CSV מהדשבורד."); return; }
+    setSendStatus("err", "לא הוגדרה כתובת Google Sheet (ראו README). מתבצעת הורדת CSV מקומית במקום.");
     downloadCSV();
     return;
   }
-  msg.className="status-msg"; msg.textContent = "שולח...";
+  setSendStatus("", "שולח את התשובות...");
   const {headers,values} = buildRow();
   try{
     await fetch(SHEET_ENDPOINT_URL,{
@@ -766,12 +774,11 @@ async function sendToSheet(){
       headers:{"Content-Type":"text/plain;charset=utf-8"},
       body: JSON.stringify({headers,values})
     });
-    msg.className="status-msg ok";
-    msg.textContent = "נשלח ל‑Google Sheet ✓";
+    state.sent = true; save();
+    setSendStatus("ok", "התשובות נשלחו ל‑Google Sheet ✓");
   }catch(e){
-    msg.className="status-msg err";
-    msg.textContent = "השליחה נכשלה – מתבצעת הורדת CSV מקומית במקום.";
-    downloadCSV();
+    setSendStatus("err", "השליחה נכשלה – ניתן לנסות שוב מהדשבורד או להוריד CSV.");
+    if(!auto) downloadCSV();
   }
 }
 

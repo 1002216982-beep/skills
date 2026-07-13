@@ -191,7 +191,8 @@ textarea.open-answer:focus{outline:none;border-color:var(--sec,var(--teal));box-
   <div class="container">
     <div class="finish-emoji">🎉</div>
     <h2>סיימת!</h2>
-    <p>כל התשובות נשמרו. תודה על ההשקעה בתהליך הרפלקטיבי.</p>
+    <p>תודה על ההשקעה בתהליך הרפלקטיבי.</p>
+    <div class="status-msg" id="finishStatus"></div>
     <button class="btn gold" id="toDashBtn">למעבר לדשבורד ←</button>
   </div>
 </div>
@@ -239,8 +240,8 @@ textarea.open-answer:focus{outline:none;border-color:var(--sec,var(--teal));box-
 <script>
 "use strict";
 /* =====================================================================
-   גרסת Google Apps Script – השמירה לגיליון מתבצעת דרך google.script.run
-   (הפונקציה saveResponse ב-Code.gs). אין צורך בהגדרות נוספות.
+   גרסת Google Apps Script – השמירה לגיליון מתבצעת אוטומטית בסיום המילוי
+   דרך google.script.run (הפונקציה saveResponse ב-Code.gs).
 ===================================================================== */
 
 /* =====================================================================
@@ -553,6 +554,7 @@ function renderSection(){
       document.getElementById("overallRing").style.display = "none";
       show("finish");
       launchConfetti();
+      sendToSheet(true); // שליחה אוטומטית של התשובות בסיום המילוי
     }else{
       state.pos++; save(); renderSection();
     }
@@ -748,25 +750,30 @@ function downloadCSV(){
 }
 
 /* ---------- שליחה ל‑Google Sheet (google.script.run) ---------- */
-function sendToSheet(){
-  const msg = document.getElementById("statusMsg");
+function setSendStatus(cls, txt){
+  ["statusMsg","finishStatus"].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el){ el.className = "status-msg "+cls; el.textContent = txt; }
+  });
+}
+function sendToSheet(auto){
+  if(auto && state.sent) return; // כבר נשלח אוטומטית
   const {headers,values} = buildRow();
   if(typeof google==="undefined" || !google.script || !google.script.run){
-    msg.className="status-msg err";
-    msg.textContent = "לא זוהתה סביבת Google Apps Script – מתבצעת הורדת CSV מקומית במקום.";
+    if(auto){ setSendStatus("", "התשובות שמורות במכשיר זה. ניתן להוריד CSV מהדשבורד."); return; }
+    setSendStatus("err", "לא זוהתה סביבת Google Apps Script – מתבצעת הורדת CSV מקומית במקום.");
     downloadCSV();
     return;
   }
-  msg.className="status-msg"; msg.textContent = "שולח...";
+  setSendStatus("", "שולח את התשובות...");
   google.script.run
     .withSuccessHandler(function(res){
-      msg.className="status-msg ok";
-      msg.textContent = "נשמר בגיליון Google Sheets ✓";
+      state.sent = true; save();
+      setSendStatus("ok", "התשובות נשלחו ונשמרו בגיליון ✓");
     })
     .withFailureHandler(function(err){
-      msg.className="status-msg err";
-      msg.textContent = "השמירה נכשלה ("+err.message+") – מתבצעת הורדת CSV מקומית במקום.";
-      downloadCSV();
+      setSendStatus("err", "השליחה נכשלה ("+err.message+") – ניתן לנסות שוב מהדשבורד.");
+      if(!auto) downloadCSV();
     })
     .saveResponse(headers, values);
 }
