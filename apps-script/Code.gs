@@ -13,7 +13,7 @@
  * בשם "מיפוי מצב קיים – תשובות". (אפשר גם להדביק ID של גיליון קיים למטה.)
  */
 
-var SHEET_ID = ''; // אופציונלי: ID של גיליון קיים. ריק = ייווצר גיליון חדש אוטומטית.
+var SHEET_ID = '1AEKJowdnP_aLlQE8oAV7K3YiK9-h9lxxEJvzQjWzF9g'; // הגיליון שאליו נאספות התשובות. ריק = ייווצר גיליון חדש אוטומטית.
 var SHEET_NAME = 'תשובות';
 
 function doGet() {
@@ -42,6 +42,12 @@ function saveResponse(headers, values) {
   try {
     var ss = getSpreadsheet_();
     var sheet = ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);
+    // מחיקת לשוניות ברירת-מחדל ריקות (למשל "גיליון1") כדי שהתשובות יופיעו מיד בפתיחת הקובץ
+    ss.getSheets().forEach(function (s) {
+      if (s.getSheetId() !== sheet.getSheetId() && s.getLastRow() === 0 && s.getLastColumn() === 0) {
+        try { ss.deleteSheet(s); } catch (e) { /* לשונית אחרונה – מתעלמים */ }
+      }
+    });
     if (sheet.getLastRow() === 0 && headers && headers.length) {
       sheet.appendRow(headers);
       sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold');

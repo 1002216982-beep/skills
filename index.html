@@ -466,7 +466,9 @@ function updateProgress(sec){
   document.getElementById("ringPct").innerHTML = overallPct+'%<small>סה"כ</small>';
 }
 
+let qScrollTimer = null;
 function renderSection(){
+  clearTimeout(qScrollTimer); // ביטול גלילה ממתינה מהקטגוריה הקודמת
   if(state.pos>=NS) state.pos = NS-1;
   const sec = SECTIONS[state.pos];
   const wrap = document.getElementById("qWrap");
@@ -509,6 +511,10 @@ function renderSection(){
     '</div>';
 
   wrap.innerHTML = html;
+  // פתיחת כל קטגוריה מראש העמוד (כולל ביטול גלילה חלקה שעדיין רצה)
+  window.scrollTo(0,0);
+  setTimeout(()=>window.scrollTo(0,0),60);
+  setTimeout(()=>window.scrollTo(0,0),300);
   updateProgress(sec);
 
   const nextBtn = document.getElementById("nextBtn");
@@ -537,8 +543,9 @@ function renderSection(){
     // גלילה עדינה לשאלה הבאה שטרם נענתה
     const cards = Array.from(wrap.querySelectorAll(".q-card"));
     const next = cards.slice(cards.indexOf(card)+1).find(c=>!c.querySelector(".opt.selected"));
-    if(next) setTimeout(()=>next.scrollIntoView({behavior:"smooth",block:"center"}),180);
-    else if(sectionComplete(sec)) setTimeout(()=>nextBtn.scrollIntoView({behavior:"smooth",block:"center"}),180);
+    clearTimeout(qScrollTimer);
+    if(next) qScrollTimer = setTimeout(()=>next.scrollIntoView({behavior:"smooth",block:"center"}),180);
+    else if(sectionComplete(sec)) qScrollTimer = setTimeout(()=>nextBtn.scrollIntoView({behavior:"smooth",block:"center"}),180);
   }));
   wrap.querySelectorAll("textarea.open-answer").forEach(t=>t.addEventListener("input",()=>{
     state.answers.open[parseInt(t.dataset.i,10)] = t.value;
