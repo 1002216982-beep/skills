@@ -13,7 +13,23 @@
 - בסיום: אפקט קונפטי 🎉 ומעבר לדשבורד – ציון כללי, גרף רדאר של 5 המעגלים, גרפי עמודות לפי נושאים, צ'קליסט תשתיות והתשובות הפתוחות.
 - כפתורי פעולה בדשבורד: **יצוא ל‑PDF/הדפסה** · **הורדת CSV** · **שליחה ל‑Google Sheet**.
 
-## חיבור ל‑Google Sheet
+## אירוח מלא ב‑Google Apps Script (מומלץ)
+
+בתיקייה `apps-script/` יש גרסה מלאה של הכלי שרצה כולה בתוך פרויקט Google Apps Script:
+השאלון מוגש ככתובת אינטרנט (Web App) והתשובות נשמרות אוטומטית לגיליון – בלי שום הגדרה נוספת.
+
+1. היכנסו אל [script.new](https://script.new) (פרויקט Apps Script חדש).
+2. בקובץ `Code.gs` – מחקו את הקוד הקיים והדביקו את תוכן `apps-script/Code.gs`.
+3. הוסיפו קובץ HTML: לחצו על **+ ← HTML** וקראו לו בדיוק **Index**. מחקו את התוכן שנוצר והדביקו את כל תוכן `apps-script/Index.html`.
+4. שמרו, ואז: **Deploy ← New deployment ← ⚙ Web app**:
+   - Execute as: **Me**
+   - Who has access: **Anyone**
+5. אשרו את ההרשאות והעתיקו את כתובת ה‑Web app – זו הכתובת שמפיצים לבתי הספר.
+
+בשליחת התשובה הראשונה ייווצר אוטומטית ב‑Drive שלכם גיליון בשם **"מיפוי מצב קיים – תשובות"**,
+וכל שליחה תוסיף בו שורה. (אפשר במקום זה להדביק ID של גיליון קיים במשתנה `SHEET_ID` שבראש `Code.gs`.)
+
+## חיבור ל‑Google Sheet (לגרסת הקובץ המקומי `index.html`)
 
 1. צרו Google Sheet חדש (למשל "מיפוי מצב קיים – תשובות").
 2. בתפריט: **Extensions ← Apps Script**.
@@ -48,7 +64,9 @@
 | קובץ | תיאור |
 |---|---|
 | `index.html` | האפליקציה כולה – HTML+CSS+JS בקובץ יחיד, כולל נתוני השאלון ותרשים המצפן |
-| `google-apps-script.gs` | קוד ה‑Apps Script לשמירת התשובות ל‑Google Sheet |
+| `apps-script/Code.gs` | פרויקט Apps Script – הגשת השאלון כ‑Web App ושמירה אוטומטית לגיליון |
+| `apps-script/Index.html` | גרסת השאלון לפרויקט ה‑Apps Script (שמירה דרך google.script.run) |
+| `google-apps-script.gs` | חלופה: endpoint לשמירה בלבד, לשימוש עם `index.html` המקומי |
 | `README.md` | הקובץ הזה |
 
 ## מקורות התוכן
