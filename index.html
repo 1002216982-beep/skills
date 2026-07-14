@@ -52,7 +52,11 @@ h1.title{text-align:center;color:var(--navy);font-size:1.9rem;margin:18px 0 6px;
 .progress-bar{position:sticky;top:0;z-index:20;background:rgba(244,247,250,.94);backdrop-filter:blur(6px);padding:14px 18px 10px;box-shadow:0 2px 10px rgba(27,42,94,.06)}
 .progress-track{height:8px;background:#e2e9f3;border-radius:99px;overflow:hidden;max-width:860px;margin:0 auto}
 .progress-fill{height:100%;width:0%;border-radius:99px;background:var(--sec,var(--teal));transition:width .35s ease}
-.progress-label{max-width:860px;margin:6px auto 0;font-size:.85rem;color:var(--muted);display:flex;justify-content:space-between}
+.progress-label{max-width:860px;margin:6px auto 0;font-size:.85rem;color:var(--muted);display:flex;justify-content:space-between;align-items:center;gap:10px}
+.top-nav{display:flex;gap:8px}
+.top-nav button{border:1.5px solid #d8e0ee;background:#fff;color:var(--navy);font-family:inherit;font-weight:700;font-size:.85rem;padding:5px 14px;border-radius:999px;cursor:pointer;transition:all .15s}
+.top-nav button:hover:not(:disabled){border-color:var(--sec,var(--teal));color:var(--sec,var(--teal))}
+.top-nav button:disabled{opacity:.35;cursor:not-allowed}
 .q-wrap{max-width:760px;margin:0 auto;padding:26px 18px 90px}
 .section-head{margin-bottom:20px}
 .chip{display:inline-block;padding:6px 18px;border-radius:999px;font-size:.95rem;font-weight:700;color:#fff;background:var(--sec,var(--teal))}
@@ -174,7 +178,13 @@ textarea.open-answer:focus{outline:none;border-color:var(--sec,var(--teal));box-
 <div class="screen" id="quizScreen">
   <div class="progress-bar">
     <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
-    <div class="progress-label"><span id="progressText"></span><span id="progressPct"></span></div>
+    <div class="progress-label">
+      <div class="top-nav">
+        <button id="topPrevBtn" type="button">→ הקודם</button>
+        <button id="topNextBtn" type="button">הבא ←</button>
+      </div>
+      <span id="progressText"></span><span id="progressPct"></span>
+    </div>
   </div>
   <div class="q-wrap" id="qWrap"></div>
   <div class="overall-ring" id="overallRing">
@@ -464,7 +474,33 @@ function updateProgress(sec){
   document.getElementById("ringArc").style.strokeDashoffset = (C*(1-overallPct/100)).toFixed(1);
   document.getElementById("ringArc").setAttribute("stroke", sec.color);
   document.getElementById("ringPct").innerHTML = overallPct+'%<small>סה"כ</small>';
+  // כפתורי הניווט העליונים
+  document.getElementById("topPrevBtn").disabled = state.pos===0;
+  const topNext = document.getElementById("topNextBtn");
+  topNext.disabled = !sectionComplete(sec);
+  topNext.textContent = state.pos===NS-1 ? "סיום ✓" : "הבא ←";
+  topNext.title = topNext.disabled ? "ענו על כל השאלות בקטגוריה כדי להמשיך" : "";
 }
+
+/* ---------- ניווט בין קטגוריות ---------- */
+function navPrev(){
+  if(state.pos>0){ state.pos--; save(); renderSection(); }
+}
+function navNext(){
+  const sec = SECTIONS[state.pos];
+  if(!sectionComplete(sec)) return;
+  if(state.pos===NS-1){
+    state.done = true; save();
+    document.getElementById("overallRing").style.display = "none";
+    show("finish");
+    launchConfetti();
+    sendToSheet(true); // שליחה אוטומטית של התשובות בסיום המילוי
+  }else{
+    state.pos++; save(); renderSection();
+  }
+}
+document.getElementById("topPrevBtn").addEventListener("click",navPrev);
+document.getElementById("topNextBtn").addEventListener("click",navNext);
 
 let qScrollTimer = null;
 function renderSection(){
@@ -507,7 +543,7 @@ function renderSection(){
   html += '<div class="nav-row">'+
     '<button class="nav-btn prev" id="prevBtn" '+(state.pos===0?'style="visibility:hidden"':'')+'>→ לקטגוריה הקודמת</button>'+
     '<span class="section-hint" id="sectionHint"></span>'+
-    '<button class="nav-btn next hidden" id="nextBtn">'+(isLast?"סיום ✓":"המשך ←")+'</button>'+
+    '<button class="nav-btn next hidden" id="nextBtn">'+(isLast?"סיום ✓":"לקטגוריה הבאה ←")+'</button>'+
     '</div>';
 
   wrap.innerHTML = html;
@@ -553,21 +589,8 @@ function renderSection(){
     updateProgress(sec);
   }));
 
-  document.getElementById("prevBtn").addEventListener("click",()=>{
-    if(state.pos>0){ state.pos--; save(); renderSection(); }
-  });
-  nextBtn.addEventListener("click",()=>{
-    if(!sectionComplete(sec)) return;
-    if(isLast){
-      state.done = true; save();
-      document.getElementById("overallRing").style.display = "none";
-      show("finish");
-      launchConfetti();
-      sendToSheet(true); // שליחה אוטומטית של התשובות בסיום המילוי
-    }else{
-      state.pos++; save(); renderSection();
-    }
-  });
+  document.getElementById("prevBtn").addEventListener("click",navPrev);
+  nextBtn.addEventListener("click",navNext);
 }
 function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
 
